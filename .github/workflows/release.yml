@@ -1,34 +1,29 @@
-name: CD Python Artifact
+name: CI/CD Web App
 
 on:
   push:
     branches: [main]
 
 jobs:
-  build-and-deploy:
+  lint-and-deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Lint HTML and CSS (basic)
+        run: |
+          sudo apt install tidy
+          tidy -errors -q index.html || true
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          python-version: '3.11'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./
+          publish_branch: gh-pages
 
-      - name: Run tests
-        run: |
-          pip install -r requirements.txt
-          python -m unittest discover
-
-      - name: Create artifact directory
-        run: |
-          mkdir -p release
-          cp *.py release/
-
-      - name: Compress artifact
-        run: |
-          zip -r python-app.zip release/
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
